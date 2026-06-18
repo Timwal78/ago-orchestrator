@@ -1,0 +1,165 @@
+version: "3.9"
+
+# ============================================================
+# A.G.O. — Autonomous Ground-Truth Orchestrator
+# ScriptMaster Labs | Full Shield Deployment
+# Render-ready headless 24/7 container stack
+# ============================================================
+
+networks:
+  ago-net:
+    driver: bridge
+
+volumes:
+  ago-redis-data:
+  ago-logs:
+  ago-schema-output:
+
+services:
+
+  # ----------------------------------------------------------
+  # 1. RECON SWARM — Go goroutine scraper engine
+  # ----------------------------------------------------------
+  recon-swarm:
+    build:
+      context: ./recon-swarm
+      dockerfile: Dockerfile
+    container_name: ago-recon-swarm
+    restart: always
+    environment:
+      - SERP_API_KEY=${SERP_API_KEY}
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - RECON_INTERVAL_SECONDS=300
+      - WORKER_POOL_SIZE=50
+      - OUTPUT_QUEUE=recon:gaps
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+    networks:
+      - ago-net
+    volumes:
+      - ago-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ----------------------------------------------------------
+  # 2. ASSET FORGE — Node.js LLM pipeline router
+  # ----------------------------------------------------------
+  asset-forge:
+    build:
+      context: ./asset-forge
+      dockerfile: Dockerfile
+    container_name: ago-asset-forge
+    restart: always
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - INPUT_QUEUE=recon:gaps
+      - OUTPUT_QUEUE=forge:assets
+      - MODEL=anthropic/claude-sonnet-4-6
+      - MAX_TOKENS=2000
+      - FORGE_CONCURRENCY=5
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+      - recon-swarm
+    networks:
+      - ago-net
+    volumes:
+      - ago-logs:/app/logs
+
+  # ----------------------------------------------------------
+  # 3. SYNDICATE ROUTER — Node.js webhook distributor
+  # ----------------------------------------------------------
+  syndicate-router:
+    build:
+      context: ./syndicate-router
+      dockerfile: Dockerfile
+    container_name: ago-syndicate-router
+    restart: always
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - INPUT_QUEUE=forge:assets
+      - DISCORD_WEBHOOK_URLS=${DISCORD_WEBHOOK_URLS}
+      - PARTNER_API_URLS=${PARTNER_API_URLS}
+      - PARTNER_API_KEYS=${PARTNER_API_KEYS}
+      - RETRY_MAX=3
+      - RETRY_BACKOFF_MS=2000
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+      - asset-forge
+    networks:
+      - ago-net
+    volumes:
+      - ago-logs:/app/logs
+
+  # ----------------------------------------------------------
+  # 4. SCHEMA ENGINE — JSON-LD Knowledge Graph compiler
+  # ----------------------------------------------------------
+  schema-engine:
+    build:
+      context: ./schema-engine
+      dockerfile: Dockerfile
+    container_name: ago-schema-engine
+    restart: always
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - INPUT_QUEUE=forge:assets
+      - DOMAIN=https://www.scriptmasterlabs.com
+      - SCHEMA_OUTPUT_PATH=/app/output/schema.jsonld
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO=Timwal78/SML_Portfolio
+      - SCHEMA_PUSH_INTERVAL_SECONDS=3600
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+    networks:
+      - ago-net
+    volumes:
+      - ago-schema-output:/app/output
+      - ago-logs:/app/logs
+
+  # ----------------------------------------------------------
+  # 5. REDIS — shared message queue backbone
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: ago-redis
+    restart: always
+    volumes:
+      - ago-redis-data:/data
+    networks:
+      - ago-net
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------
+  # 6. DASHBOARD — Full Shield control center
+  # ----------------------------------------------------------
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: ago-dashboard
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    depends_on:
+      - redis
+    networks:
+      - ago-net
