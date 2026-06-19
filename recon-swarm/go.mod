@@ -1,6 +1,6 @@
 module github.com/Timwal78/ago/recon-swarm
 
-go 1.26.1
+go 1.22.0
 
 require github.com/go-redis/redis/v8 v8.11.5
 
