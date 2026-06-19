@@ -191,7 +191,7 @@ func getEnv(key, fallback string) string {
 func requireEnv(key string) string {
 	v := os.Getenv(key)
 	if v == "" {
-		log.Fatalf("[RECON] Missing required env var: %s", key)
+		log.Printf("[RECON] WARNING: Missing required env var: %s", key)
 	}
 	return v
 }
