@@ -1,0 +1,12 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "mcp-x402",
+  "url": "https://mcp-x402.onrender.com",
+  "author": {
+    "@type": "Organization",
+    "name": "ScriptMasterLabs",
+    "url": "https://www.scriptmasterlabs.com"
+  },
+  "description": "Amazon storefront for AI agents. 43+ tools, pay-per-call via x402/XRPL."
+}
