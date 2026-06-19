@@ -1,0 +1,14 @@
+﻿{
+  "name": "ago-asset-forge",
+  "version": "1.0.0",
+  "description": "A.G.O. Asset Forge",
+  "main": "src/router/forge-worker.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/router/forge-worker.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "p-limit": "^5.0.0"
+  }
+}
