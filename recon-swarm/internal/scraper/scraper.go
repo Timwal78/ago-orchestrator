@@ -1,5 +1,17 @@
 ﻿package scraper
 
-import "context"
+import (
+	"context"
+	"github.com/Timwal78/ago/recon-swarm/internal/models"
+)
 
-func Start(ctx context.Context) {}
+type Target struct {
+	Source      string
+	Queries     []string
+	Subreddits  []string
+	ChannelIDs  []string
+}
+
+func Execute(ctx context.Context, t Target, serpKey, discordToken string) ([]models.RawSignal, error) {
+	return []models.RawSignal{}, nil
+}
