@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import pLimit from "p-limit";
 import { generateAsset } from "../forge/generator.js";
 import { buildPrompt } from "../prompts/builder.js";
-import { logger } from "../../config/logger.js";
+const logger = { info: console.log, error: console.error, warn: console.warn };
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const INPUT_QUEUE = process.env.INPUT_QUEUE || "recon:gaps";
