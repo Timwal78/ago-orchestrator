@@ -1,42 +1,55 @@
 {
-  "product": "A.G.O. — Autonomous Ground-Truth Orchestrator",
+  "product": "A.G.O. \u2014 Autonomous Ground-Truth Orchestrator",
   "tagline": "AI-powered content pipeline from raw signals to published knowledge graph",
-  "description": "A.G.O. is a 6-microservice autonomous pipeline for ScriptMasterLabs. It scrapes real signals from SERP, Reddit, and Discord (50 concurrent goroutines in Go), routes them through an LLM asset forge (OpenRouter/Anthropic), distributes finished content via webhooks to Discord and partner APIs, and compiles JSON-LD knowledge graphs that auto-push to the SML_Portfolio GitHub repo — creating the ground-truth AI discoverability layer for all ScriptMasterLabs products.",
+  "description": "A.G.O. is a 6-microservice autonomous pipeline for ScriptMasterLabs. It scrapes real signals from SERP, Reddit, and Discord (50 concurrent goroutines in Go), routes them through an LLM asset forge (OpenRouter/Anthropic), distributes finished content via webhooks to Discord and partner APIs, and compiles JSON-LD knowledge graphs that auto-push to the SML_Portfolio GitHub repo \u2014 creating the ground-truth AI discoverability layer for all ScriptMasterLabs products.",
   "url": "https://scriptmasterlabs.com",
   "github": "https://github.com/timwal78/ago-orchestrator",
   "license": "MIT",
   "organization": "ScriptMasterLabs / Script Master Labs LLC (SDVOSB)",
-
-  "data_flow": "SERP/Reddit/Discord → Recon Swarm (Go) → Redis (recon:gaps) → Asset Forge (Node.js/LLM) → Redis (forge:assets) → [Syndicate Router → Discord+Partners] + [Schema Engine → JSON-LD → GitHub]",
-
+  "data_flow": "SERP/Reddit/Discord \u2192 Recon Swarm (Go) \u2192 Redis (recon:gaps) \u2192 Asset Forge (Node.js/LLM) \u2192 Redis (forge:assets) \u2192 [Syndicate Router \u2192 Discord+Partners] + [Schema Engine \u2192 JSON-LD \u2192 GitHub]",
   "services": [
     {
       "name": "recon-swarm",
       "language": "Go",
       "type": "Background Worker",
       "description": "Concurrent SERP/Reddit/Discord scraper. 50 goroutines. Signal scoring + noise filter. Outputs to Redis queue.",
-      "key_files": ["cmd/recon/main.go", "internal/models/targets.go", "internal/filter/evaluate.go", "internal/scraper/"]
+      "key_files": [
+        "cmd/recon/main.go",
+        "internal/models/targets.go",
+        "internal/filter/evaluate.go",
+        "internal/scraper/"
+      ]
     },
     {
       "name": "asset-forge",
       "language": "Node.js",
       "type": "Background Worker",
       "description": "LLM pipeline router. Redis consumer with p-limit concurrency. Calls OpenRouter or Anthropic API with zero-hallucination prompt constructor.",
-      "key_files": ["src/router/forge-worker.js", "src/forge/generator.js", "src/prompts/builder.js"]
+      "key_files": [
+        "src/router/forge-worker.js",
+        "src/forge/generator.js",
+        "src/prompts/builder.js"
+      ]
     },
     {
       "name": "syndicate-router",
       "language": "Node.js",
       "type": "Background Worker",
       "description": "Webhook distribution engine. Fan-out with retry + backoff. Pushes to Discord and partner APIs.",
-      "key_files": ["src/webhooks/orchestrator.js", "src/discord/pusher.js", "src/partners/pusher.js"]
+      "key_files": [
+        "src/webhooks/orchestrator.js",
+        "src/discord/pusher.js",
+        "src/partners/pusher.js"
+      ]
     },
     {
       "name": "schema-engine",
       "language": "Node.js",
       "type": "Background Worker",
       "description": "JSON-LD Knowledge Graph compiler. Emits Organization + Product + Mention entities. Auto-pushes compiled graph to SML_Portfolio on GitHub.",
-      "key_files": ["src/compiler/knowledge-graph.js"]
+      "key_files": [
+        "src/compiler/knowledge-graph.js"
+      ]
     },
     {
       "name": "dashboard",
@@ -50,12 +63,113 @@
       "description": "Job queue backbone. Queues: recon:gaps (raw signals), forge:assets (processed content)."
     }
   ],
-
   "deployment": {
     "platform": "Render",
     "pattern": "Separate Render worker per service + Render Redis add-on",
     "orchestration": "docker-compose.yml for local development"
   },
-
-  "purpose": "GEO infrastructure — generates the knowledge graph and discovery artifacts that make ScriptMasterLabs products findable by AI engines (Perplexity, ChatGPT, Gemini, Claude)"
+  "purpose": "GEO infrastructure \u2014 generates the knowledge graph and discovery artifacts that make ScriptMasterLabs products findable by AI engines (Perplexity, ChatGPT, Gemini, Claude)",
+  "ecosystem": {
+    "organization": "ScriptMasterLabs",
+    "organization_url": "https://scriptmasterlabs.com",
+    "description": "ScriptMasterLabs builds x402 micropayment infrastructure, AI agent trust systems, and institutional market intelligence tools. All products interoperate via the x402 protocol for agent-native payments.",
+    "related_products": [
+      {
+        "name": "mcp-x402 Signal API",
+        "role": "Unified pay-per-call MCP gateway",
+        "description": "43+ MCP tools covering trading signals, web scraping, SEC data, XRPL whale copy-trading, memecoin launchpad, and agent infrastructure. Multi-chain x402: Base USDC, XRPL RLUSD, Solana USDC.",
+        "github": "https://github.com/timwal78/sml-x402-signal-api",
+        "tags": [
+          "mcp-server",
+          "x402",
+          "multi-chain",
+          "trading"
+        ]
+      },
+      {
+        "name": "SqueezeOS",
+        "role": "Institutional AI trading intelligence MCP server",
+        "description": "33 MCP tools \u2014 short-squeeze detection, options flow, IWM 0DTE scoring, council verdicts, peer signal marketplace. Pay-per-signal in RLUSD on XRP Ledger via x402.",
+        "github": "https://github.com/timwal78/squeezeos",
+        "url": "https://squeezeos-api.onrender.com",
+        "tags": [
+          "mcp-server",
+          "trading",
+          "x402",
+          "rlusd"
+        ]
+      },
+      {
+        "name": "Ghost Layer",
+        "role": "Dual-chain XRPL+Base toll gateway",
+        "description": "Private routing engine with XRPL+Base micropayment toll, Xahau hooks intelligence, and URIToken minting. Go service, zero logging.",
+        "github": "https://github.com/timwal78/ghost-layer",
+        "url": "https://ghost-layer.onrender.com",
+        "tags": [
+          "gateway",
+          "xrpl",
+          "base",
+          "privacy"
+        ]
+      },
+      {
+        "name": "Aetheris-MCP",
+        "role": "x402 web scraping MCP server",
+        "description": "SSE MCP server with JSDOM-sanitized web scraping behind an on-chain x402 USDC micropayment interceptor. Content returned as clean ad-free Markdown.",
+        "github": "https://github.com/timwal78/aetheris-mcp-render",
+        "tags": [
+          "mcp-server",
+          "scraping",
+          "x402",
+          "usdc"
+        ]
+      },
+      {
+        "name": "Aetheris Client SDK",
+        "role": "TypeScript x402 payment SDK for Aetheris-MCP",
+        "description": "Official npm SDK that auto-intercepts HTTP 402 challenges and settles USDC payments on Base \u2014 no manual payment handling needed.",
+        "github": "https://github.com/timwal78/aetheris-client-sdk",
+        "tags": [
+          "sdk",
+          "typescript",
+          "x402",
+          "usdc"
+        ]
+      },
+      {
+        "name": "CrawlToll",
+        "role": "x402-gated web crawling service",
+        "description": "Metered web crawling with x402 micropayment gating. Agents pay per crawl in USDC or RLUSD.",
+        "github": "https://github.com/timwal78/crawltoll",
+        "tags": [
+          "crawling",
+          "x402"
+        ]
+      },
+      {
+        "name": "ZeroQuery Protocol",
+        "role": "Privacy-preserving intent ranking with ZK proofs",
+        "description": "SDK + Anchor program for ranking user intents without leaking raw queries. Groth16 ZK proofs (Poseidon hash) + pay-as-you-go SOL SaaS tiers.",
+        "github": "https://github.com/timwal78/zeroquery-protocol",
+        "tags": [
+          "zk-proofs",
+          "solana",
+          "privacy",
+          "sdk"
+        ]
+      },
+      {
+        "name": "Printing Press Library",
+        "role": "Published catalog of generated Go CLIs and MCP servers",
+        "description": "Registry of type-safe Go CLIs and MCP servers produced by CLI Printing Press. Install any CLI via npx @mvanhorn/printing-press.",
+        "github": "https://github.com/timwal78/printing-press-library",
+        "tags": [
+          "cli",
+          "mcp-server",
+          "go",
+          "catalog"
+        ]
+      }
+    ]
+  }
 }
