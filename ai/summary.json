@@ -1,0 +1,61 @@
+{
+  "product": "A.G.O. — Autonomous Ground-Truth Orchestrator",
+  "tagline": "AI-powered content pipeline from raw signals to published knowledge graph",
+  "description": "A.G.O. is a 6-microservice autonomous pipeline for ScriptMasterLabs. It scrapes real signals from SERP, Reddit, and Discord (50 concurrent goroutines in Go), routes them through an LLM asset forge (OpenRouter/Anthropic), distributes finished content via webhooks to Discord and partner APIs, and compiles JSON-LD knowledge graphs that auto-push to the SML_Portfolio GitHub repo — creating the ground-truth AI discoverability layer for all ScriptMasterLabs products.",
+  "url": "https://scriptmasterlabs.com",
+  "github": "https://github.com/timwal78/ago-orchestrator",
+  "license": "MIT",
+  "organization": "ScriptMasterLabs / Script Master Labs LLC (SDVOSB)",
+
+  "data_flow": "SERP/Reddit/Discord → Recon Swarm (Go) → Redis (recon:gaps) → Asset Forge (Node.js/LLM) → Redis (forge:assets) → [Syndicate Router → Discord+Partners] + [Schema Engine → JSON-LD → GitHub]",
+
+  "services": [
+    {
+      "name": "recon-swarm",
+      "language": "Go",
+      "type": "Background Worker",
+      "description": "Concurrent SERP/Reddit/Discord scraper. 50 goroutines. Signal scoring + noise filter. Outputs to Redis queue.",
+      "key_files": ["cmd/recon/main.go", "internal/models/targets.go", "internal/filter/evaluate.go", "internal/scraper/"]
+    },
+    {
+      "name": "asset-forge",
+      "language": "Node.js",
+      "type": "Background Worker",
+      "description": "LLM pipeline router. Redis consumer with p-limit concurrency. Calls OpenRouter or Anthropic API with zero-hallucination prompt constructor.",
+      "key_files": ["src/router/forge-worker.js", "src/forge/generator.js", "src/prompts/builder.js"]
+    },
+    {
+      "name": "syndicate-router",
+      "language": "Node.js",
+      "type": "Background Worker",
+      "description": "Webhook distribution engine. Fan-out with retry + backoff. Pushes to Discord and partner APIs.",
+      "key_files": ["src/webhooks/orchestrator.js", "src/discord/pusher.js", "src/partners/pusher.js"]
+    },
+    {
+      "name": "schema-engine",
+      "language": "Node.js",
+      "type": "Background Worker",
+      "description": "JSON-LD Knowledge Graph compiler. Emits Organization + Product + Mention entities. Auto-pushes compiled graph to SML_Portfolio on GitHub.",
+      "key_files": ["src/compiler/knowledge-graph.js"]
+    },
+    {
+      "name": "dashboard",
+      "language": "React",
+      "type": "Web Service (port 3000)",
+      "description": "Full Shield control center. Jet black + neon real-time pipeline monitor."
+    },
+    {
+      "name": "Redis",
+      "type": "Render Redis Add-On",
+      "description": "Job queue backbone. Queues: recon:gaps (raw signals), forge:assets (processed content)."
+    }
+  ],
+
+  "deployment": {
+    "platform": "Render",
+    "pattern": "Separate Render worker per service + Render Redis add-on",
+    "orchestration": "docker-compose.yml for local development"
+  },
+
+  "purpose": "GEO infrastructure — generates the knowledge graph and discovery artifacts that make ScriptMasterLabs products findable by AI engines (Perplexity, ChatGPT, Gemini, Claude)"
+}
