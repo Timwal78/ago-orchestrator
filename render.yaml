@@ -1,0 +1,110 @@
+services:
+  # Redis — shared message bus for all services
+  - type: redis
+    name: ago-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+
+  # recon-swarm — Go web scraper / intelligence gatherer
+  - type: worker
+    name: ago-recon-swarm
+    runtime: docker
+    dockerfilePath: ./recon-swarm/Dockerfile
+    dockerContext: ./recon-swarm
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ago-redis
+          property: connectionString
+      - key: SERP_API_KEY
+        sync: false
+      - key: REDDIT_CLIENT_ID
+        sync: false
+      - key: REDDIT_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_CHANNEL_IDS
+        sync: false
+      - key: RECON_INTERVAL_SECONDS
+        value: "300"
+      - key: WORKER_POOL_SIZE
+        value: "4"
+
+  # asset-forge — LLM content generation engine
+  - type: worker
+    name: ago-asset-forge
+    runtime: docker
+    dockerfilePath: ./asset-forge/Dockerfile
+    dockerContext: ./asset-forge
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ago-redis
+          property: connectionString
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FORGE_CONCURRENCY
+        value: "2"
+
+  # syndicate-router — Discord + partner distribution
+  - type: worker
+    name: ago-syndicate-router
+    runtime: docker
+    dockerfilePath: ./syndicate-router/Dockerfile
+    dockerContext: ./syndicate-router
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ago-redis
+          property: connectionString
+      - key: DISCORD_WEBHOOK_URLS
+        sync: false
+      - key: PARTNER_API_URLS
+        sync: false
+      - key: PARTNER_API_KEYS
+        sync: false
+
+  # schema-engine — pushes generated schemas to GitHub
+  - type: worker
+    name: ago-schema-engine
+    runtime: docker
+    dockerfilePath: ./schema-engine/Dockerfile
+    dockerContext: ./schema-engine
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ago-redis
+          property: connectionString
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        value: "Timwal78/SML_Portfolio"
+      - key: DOMAIN
+        sync: false
+      - key: SCHEMA_PUSH_INTERVAL_SECONDS
+        value: "600"
+
+  # dashboard — React monitoring UI
+  - type: web
+    name: ago-dashboard
+    runtime: docker
+    dockerfilePath: ./dashboard/Dockerfile
+    dockerContext: ./dashboard
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ago-redis
+          property: connectionString
