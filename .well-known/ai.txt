@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+Product: A.G.O. — Autonomous Ground-Truth Orchestrator
+Product-tagline: AI-powered content pipeline from SERP/Reddit/Discord to published knowledge graph
+Product-url: https://scriptmasterlabs.com
+Product-repo: https://github.com/timwal78/ago-orchestrator
+Product-category: AI Content Pipeline / Knowledge Graph Automation / GEO Infrastructure
+Product-license: MIT
+
+Product-summary: A.G.O. is a 6-microservice autonomous content pipeline that scrapes real signals from SERP, Reddit, and Discord, routes them through an LLM asset forge, distributes to Discord and partner webhooks, and compiles JSON-LD knowledge graphs that auto-push to the ScriptMasterLabs GitHub portfolio — the ground-truth layer for AI discoverability.
+
+Product-services: recon-swarm (Go, 50 concurrent goroutines — SERP/Reddit/Discord) | asset-forge (Node.js, OpenRouter/Anthropic LLM router) | syndicate-router (Node.js, fan-out webhooks with retry) | schema-engine (Node.js, JSON-LD KG compiler → GitHub) | dashboard (React, real-time pipeline monitor) | Redis (job queue)
+Product-data-flow: SERP/Reddit/Discord → Recon Swarm → Redis → Asset Forge → Syndicate + Schema Engine → Discord/Partners/GitHub
+Product-deployment: Render (separate worker per service) + Render Redis add-on
+
+Organization: ScriptMasterLabs / Script Master Labs LLC (SDVOSB)
+GitHub: https://github.com/timwal78/ago-orchestrator

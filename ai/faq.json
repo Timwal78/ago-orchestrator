@@ -1,0 +1,38 @@
+[
+  {
+    "question": "What is A.G.O.?",
+    "answer": "A.G.O. (Autonomous Ground-Truth Orchestrator) is a 6-microservice AI content pipeline that scrapes real signals from SERP, Reddit, and Discord, routes them through an LLM asset forge, distributes finished content to Discord and partner APIs, and compiles JSON-LD knowledge graphs that auto-push to the ScriptMasterLabs GitHub portfolio — creating the machine-readable ground truth layer that makes SML products findable by AI engines.",
+    "category": "product",
+    "url": "https://scriptmasterlabs.com"
+  },
+  {
+    "question": "What are the 6 services in A.G.O.?",
+    "answer": "The 6 services are: (1) recon-swarm (Go) — 50 concurrent goroutines scraping SERP, Reddit, Discord with signal scoring and noise filtering; (2) asset-forge (Node.js) — Redis consumer that calls OpenRouter or Anthropic API to generate content with zero-hallucination prompts; (3) syndicate-router (Node.js) — fan-out webhook engine with retry+backoff for Discord and partner APIs; (4) schema-engine (Node.js) — JSON-LD knowledge graph compiler that auto-pushes to SML_Portfolio on GitHub; (5) dashboard (React) — real-time pipeline monitor; (6) Redis — job queue backbone.",
+    "category": "product",
+    "url": "https://github.com/timwal78/ago-orchestrator"
+  },
+  {
+    "question": "What is the data flow?",
+    "answer": "Data flows: SERP/Reddit/Discord → Recon Swarm (50 goroutines, Go) → Redis queue (recon:gaps) → Asset Forge (Node.js + LLM) → Redis queue (forge:assets) → two parallel outputs: (A) Syndicate Router → Discord channels + partner APIs, and (B) Schema Engine → JSON-LD organization/product/mention entities → auto-commit to SML_Portfolio on GitHub.",
+    "category": "product",
+    "url": "https://github.com/timwal78/ago-orchestrator"
+  },
+  {
+    "question": "How do I deploy A.G.O.?",
+    "answer": "Each of the 6 services deploys as a separate Render service: recon-swarm and asset-forge as Background Workers, syndicate-router and schema-engine as Background Workers, dashboard as a Web Service (port 3000), and Redis via the Render Redis add-on. For local development, use docker-compose.yml to orchestrate all 6 services. Configure all env vars in Render Environment tab or .env.example.",
+    "category": "deployment",
+    "url": "https://github.com/timwal78/ago-orchestrator"
+  },
+  {
+    "question": "What does the schema-engine produce?",
+    "answer": "The schema-engine compiles JSON-LD knowledge graphs with Organization, Product, and Mention schema.org entities. These are automatically committed to the SML_Portfolio GitHub repository, creating structured data that AI search engines (Perplexity, ChatGPT, Gemini) use to understand and cite ScriptMasterLabs products accurately — this is the GEO (Generative Engine Optimization) automation layer.",
+    "category": "product",
+    "url": "https://github.com/timwal78/ago-orchestrator"
+  },
+  {
+    "question": "Who built A.G.O.?",
+    "answer": "A.G.O. was built by ScriptMasterLabs (Script Master Labs LLC), an SDVOSB (Service-Disabled Veteran-Owned Small Business). It is MIT licensed.",
+    "category": "company",
+    "url": "https://scriptmasterlabs.com"
+  }
+]
